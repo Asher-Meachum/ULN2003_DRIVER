@@ -29,10 +29,10 @@ class ULN2003:
                         sleep(delay)
                         i+=direction
             else:
-                print("The value of direction is not valid. Please change the value to 1 (clockwise) or -1 (counterclockwise) to resolve this error.")
+                raise ValueError("The value of direction is not valid. Please change the value to 1 (clockwise) or -1 (counterclockwise) to resolve this error.")
         else:
             if delay < 0.002:
-                print("The value of delay is smaller than 0.002. Please increase the value of delay to resolve this error.")
+                raise ValueError("The value of delay is smaller than 0.002. Please increase the value of delay to resolve this error.")
             if steps < 1:
                 raise ValueError("The value of steps is smaller than 1. Please increase the value of steps to resolve this error.")
             [pin.value(0) for pin in self.motors[motor_id]]
