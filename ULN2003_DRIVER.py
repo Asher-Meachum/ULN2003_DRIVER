@@ -2,31 +2,23 @@ from machine import Pin
 from time import sleep
 
 class ULN2003:
-    def __init__(self, a, b, c, d):
+    def __init__(self, motor_pin_id_groups):
         try:
-            self.A = Pin(a, Pin.OUT)
-            self.B = Pin(b, Pin.OUT)
-            self.C = Pin(c, Pin.OUT)
-            self.D = Pin(d, Pin.OUT)
+            self.motor_pin_id_groups = motor_pin_id_groups
+            self.motors = [[Pin(idx, Pin.OUT) for idx in group] for group in self.motor_pin_id_group]
         except ValueError:
             print("Invalid pins provided. Check the pinout of your microcontroller.")
 
         # Used to cycle through the pin combinations in clockwise & counterclockwise.
-        self.A_value = [1, 0, 0, 1]
-        self.B_value = [1, 1, 0, 0]
-        self.C_value = [0, 1, 1, 0]
-        self.D_value = [0, 0, 1, 1]
+        self.drive_values = [[1, 0, 0, 1], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1]]
     
-    def turn(self, direction: int, steps: int, delay: float = 0.002):
+    def turn(self, motor_id: int, direction: int, steps: int, delay: float = 0.002):
         if delay >= 0.002 and steps > 0:
             if direction == -1 or direction == 1:
                 for step in range(steps):
                     i = 0
                     for i in range(4):
-                        self.A.value(self.A_value[i*direction])
-                        self.B.value(self.B_value[i*direction])
-                        self.C.value(self.C_value[i*direction])
-                        self.D.value(self.D_value[i*direction])
+                        [pin.value(drive) for pin, drive in zip(self.motors[motor_id], self.drive_values)]
                         sleep(delay)
                         i+=direction
             else:
@@ -36,8 +28,4 @@ class ULN2003:
                 print("The value of delay is smaller than 0.002. Please increase the value of delay to resolve this error.")
             if steps < 1:
                 print("The value of steps is smaller than 1. Please increase the value of steps to resolve this error.")
-            self.A.value(0)
-            self.B.value(0)
-            self.C.value(0)
-            self.D.value(0)
-
+            [pin.value(0) for pin in self.motors[motor_id]] # side effects inside a list comprehension is not the best form; may also not be supported by circuitpython
