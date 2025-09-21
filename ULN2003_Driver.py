@@ -25,7 +25,10 @@ class ULN2003:
                 for step in range(steps):
                     i = 0
                     for i in range(4):
-                        [pin.value(drive_val) for pin, drive_val in zip(self.motors[motor_id], self.drive_values)]
+                        try:
+                            [pin.value(drive_val) for pin, drive_val in zip(self.motors[motor_id], self.drive_values)]
+                        except IndexError:
+                            raise IndexError("You addressed a motor that doesn't exist. Please check your motor initialisation.")
                         sleep(delay)
                         i+=direction
             else:
