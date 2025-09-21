@@ -2,10 +2,17 @@ from machine import Pin
 from time import sleep
 
 class ULN2003:
-    def __init__(self, motor_pin_id_groups):
+    def __init__(self, motor_pin_groups):
         try:
-            self.motor_pin_id_groups = motor_pin_id_groups
-            self.motors = [[Pin(idx, Pin.OUT) for idx in group] for group in self.motor_pin_id_group]
+            self.motor_pin_groups = motor_pin_groups
+            try:
+                for i in len(motor_pin_groups):
+                    if len(motor_pin_groups[i]) != 4:
+                        motor_pin_groups[i] = []
+                        raise TypeError(f"Initialisation expected four pin objects, but recieved a different number. Please check your arguments.")
+            except TypeError:
+                pass
+            self.motors = [[Pin(pin_number, Pin.OUT) for pin_number in pin_group] for pin_group in self.motor_pin_groups]
         except ValueError:
             print("Invalid pins provided. Check the pinout of your microcontroller.")
 
@@ -18,7 +25,7 @@ class ULN2003:
                 for step in range(steps):
                     i = 0
                     for i in range(4):
-                        [pin.value(drive) for pin, drive in zip(self.motors[motor_id], self.drive_values)]
+                        [pin.value(drive_val) for pin, drive_val in zip(self.motors[motor_id], self.drive_values)]
                         sleep(delay)
                         i+=direction
             else:
@@ -28,4 +35,5 @@ class ULN2003:
                 print("The value of delay is smaller than 0.002. Please increase the value of delay to resolve this error.")
             if steps < 1:
                 print("The value of steps is smaller than 1. Please increase the value of steps to resolve this error.")
-            [pin.value(0) for pin in self.motors[motor_id]] # side effects inside a list comprehension is not the best form; may also not be supported by circuitpython
+            [pin.value(0) for pin in self.motors[motor_id]]
+
